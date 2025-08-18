@@ -2,6 +2,9 @@ import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { connectToMongo } from "./bd/mongo";
 import { projectRoutes } from "../src/routes/project.routes"; // Importa las rutas de proyectos
+import { academicoRoutes } from "../src/routes/academicos.routes";
+import { institucionRoutes } from "../src/routes/instituciones.routes"; // Importa las rutas de instituciones
+import { unidadAcademicaRoutes } from "../src/routes/ua.routes"; // Importa las rutas de unidades académicas
 
 const app = new Elysia();
 
@@ -39,6 +42,9 @@ app.get("/", () => "¡Hola desde tu API de Cartera!", {
 
 // Montar las rutas de proyectos
 app.use(projectRoutes);
+app.use(academicoRoutes);
+app.use(institucionRoutes);
+app.use(unidadAcademicaRoutes);
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
