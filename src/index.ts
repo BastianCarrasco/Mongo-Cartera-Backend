@@ -6,7 +6,11 @@ import { academicoRoutes } from "../src/routes/academicos.routes";
 import { institucionRoutes } from "../src/routes/instituciones.routes"; // Importa las rutas de instituciones
 import { unidadAcademicaRoutes } from "../src/routes/ua.routes"; // Importa las rutas de unidades académicas
 import { EstadisticasRoutes } from "./routes/funciones/Estadisticas.routes";
-
+import { tipoConvRoutes } from "./routes/tipo_conv.routes";
+import { estatusRoutes } from "./routes/estatus.routes"; // Importa las rutas de estatus
+import { tematicasRoutes } from "./routes/tematicas.routes";
+import { fondosRoutes } from "./routes/fondos.routes";
+import { tipoApoyoRoutes } from "./routes/tipo_apoyo.routes";
 const app = new Elysia();
 
 // Conectar a MongoDB al iniciar la aplicación
@@ -42,12 +46,18 @@ app.get("/", () => "¡Hola desde tu API de Cartera!", {
 });
 
 // Montar las rutas de proyectos
-app.use(projectRoutes);
 app.use(academicoRoutes);
-app.use(institucionRoutes);
-app.use(unidadAcademicaRoutes);
-app.use(EstadisticasRoutes);
 
+app.use(estatusRoutes);
+app.use(fondosRoutes);
+app.use(institucionRoutes);
+app.use(projectRoutes);
+app.use(tematicasRoutes);
+app.use(tipoApoyoRoutes);
+app.use(tipoConvRoutes);
+app.use(unidadAcademicaRoutes);
+
+app.use(EstadisticasRoutes);
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
