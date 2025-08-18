@@ -5,6 +5,7 @@ import { projectRoutes } from "../src/routes/project.routes"; // Importa las rut
 import { academicoRoutes } from "../src/routes/academicos.routes";
 import { institucionRoutes } from "../src/routes/instituciones.routes"; // Importa las rutas de instituciones
 import { unidadAcademicaRoutes } from "../src/routes/ua.routes"; // Importa las rutas de unidades académicas
+import { EstadisticasRoutes } from "./routes/funciones/Estadisticas.routes";
 
 const app = new Elysia();
 
@@ -45,6 +46,7 @@ app.use(projectRoutes);
 app.use(academicoRoutes);
 app.use(institucionRoutes);
 app.use(unidadAcademicaRoutes);
+app.use(EstadisticasRoutes);
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
