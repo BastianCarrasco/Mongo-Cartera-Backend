@@ -19,7 +19,7 @@ type UpdateFotoByNameBody = {
   nombre: string;
   a_paterno: string;
   a_materno: string | null;
-  Link_Foto: string;
+  link_foto: string;
 };
 
 // Nuevo tipo para el cuerpo de la solicitud de actualización de foto por nombre (para múltiples académicos)
@@ -119,7 +119,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
         unidad: t.String({
           description: "Unidad o departamento del académico",
         }),
-        Link_Foto: t.String({
+        link_foto: t.String({
           format: "uri",
           description: "URL de la foto del académico",
         }),
@@ -189,7 +189,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
           a_materno: t.Union([t.String(), t.Null()]),
           a_paterno: t.String(),
           unidad: t.String(),
-          Link_Foto: t.String({ format: "uri" }),
+          link_foto: t.String({ format: "uri" }),
         })
       ),
       detail: {
@@ -243,7 +243,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
         ACADEMICOS_COLLECTION_NAME
       );
 
-      const { nombre, a_paterno, a_materno, Link_Foto } =
+      const { nombre, a_paterno, a_materno, link_foto } =
         body as UpdateFotoByNameBody;
 
       // Construir el filtro de búsqueda
@@ -264,7 +264,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
 
       const result = await academicosCollection.updateOne(
         filter,
-        { $set: { Link_Foto: Link_Foto } } // Solo actualizamos Link_Foto
+        { $set: { link_foto: link_foto } } // Solo actualizamos link_foto
       );
 
       if (result.matchedCount === 0) {
@@ -278,13 +278,13 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
         set.status = 200;
         return {
           success: true,
-          message: "Link_Foto del académico no modificado (ya es idéntico)",
+          message: "link_foto del académico no modificado (ya es idéntico)",
         };
       }
 
       return {
         success: true,
-        message: "Link_Foto del académico actualizado exitosamente",
+        message: "link_foto del académico actualizado exitosamente",
       };
     },
     {
@@ -296,14 +296,14 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
         a_materno: t.Union([t.String(), t.Null()], {
           description: "Apellido materno del académico a buscar (opcional)",
         }),
-        Link_Foto: t.String({
+        link_foto: t.String({
           format: "uri",
           description: "Nuevo URL de la foto del académico",
         }),
       }),
       detail: {
         summary:
-          "Actualizar Link_Foto de un académico por nombre, apellido paterno y materno",
+          "Actualizar link_foto de un académico por nombre, apellido paterno y materno",
         tags: ["Académicos"],
       },
     }
@@ -332,7 +332,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
       }
 
       for (const updateData of updates) {
-        const { nombre, a_paterno, a_materno, Link_Foto } = updateData;
+        const { nombre, a_paterno, a_materno, link_foto } = updateData;
 
         const filter: {
           nombre: string;
@@ -352,7 +352,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
           // que queremos actualizar. Si hubiera múltiples con los mismos criterios de nombre,
           // solo se actualizaría el primero que encuentre.
           const result = await academicosCollection.updateOne(filter, {
-            $set: { Link_Foto: Link_Foto },
+            $set: { link_foto: link_foto },
           });
 
           if (result.matchedCount === 0) {
@@ -365,13 +365,13 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
             results.push({
               query: updateData,
               status: "skipped",
-              message: "Link_Foto del académico no modificado (ya es idéntico)",
+              message: "link_foto del académico no modificado (ya es idéntico)",
             });
           } else {
             results.push({
               query: updateData,
               status: "success",
-              message: "Link_Foto del académico actualizado exitosamente",
+              message: "link_foto del académico actualizado exitosamente",
             });
           }
         } catch (error: any) {
@@ -402,7 +402,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
         set.status = 200; // Ningún tuvo éxito, pero tampoco hubo errores de búsqueda/validación
         return {
           success: true,
-          message: "Ningún Link_Foto de académico fue modificado",
+          message: "Ningún link_foto de académico fue modificado",
           results,
         };
       }
@@ -425,7 +425,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
           a_materno: t.Union([t.String(), t.Null()], {
             description: "Apellido materno del académico a buscar (opcional)",
           }),
-          Link_Foto: t.String({
+          link_foto: t.String({
             format: "uri",
             description: "Nuevo URL de la foto del académico",
           }),
@@ -437,7 +437,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
       ),
       detail: {
         summary:
-          "Actualizar Link_Foto de múltiples académicos por nombre, apellido paterno y materno (batch)",
+          "Actualizar link_foto de múltiples académicos por nombre, apellido paterno y materno (batch)",
         tags: ["Académicos"],
       },
     }

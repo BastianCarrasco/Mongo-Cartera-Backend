@@ -7,5 +7,5 @@ export interface Academico {
   a_materno: string | null; // Puede ser string o null, según tu ejemplo
   a_paterno: string;
   unidad: string;
-  Link_Foto: string;
+  link_foto: string;
 }
