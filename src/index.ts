@@ -11,6 +11,8 @@ import { estatusRoutes } from "./routes/estatus.routes"; // Importa las rutas de
 import { tematicasRoutes } from "./routes/tematicas.routes";
 import { fondosRoutes } from "./routes/fondos.routes";
 import { tipoApoyoRoutes } from "./routes/tipo_apoyo.routes";
+import { perfilProyectoRoutes } from "./routes/preguntas_perfil.routes";
+import { respuestasPerfilRoutes } from "./routes/respuestas_perfil.routes";
 const app = new Elysia();
 
 // Conectar a MongoDB al iniciar la aplicación
@@ -47,15 +49,16 @@ app.get("/", () => "¡Hola desde tu API de Cartera!", {
 
 // Montar las rutas de proyectos
 app.use(academicoRoutes);
-
 app.use(estatusRoutes);
 app.use(fondosRoutes);
 app.use(institucionRoutes);
+app.use(perfilProyectoRoutes);
 app.use(projectRoutes);
 app.use(tematicasRoutes);
 app.use(tipoApoyoRoutes);
 app.use(tipoConvRoutes);
 app.use(unidadAcademicaRoutes);
+app.use(respuestasPerfilRoutes);
 
 app.use(EstadisticasRoutes);
 // Iniciar el servidor
