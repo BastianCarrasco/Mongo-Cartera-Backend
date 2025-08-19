@@ -27,7 +27,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
         PROJECT_COLLECTION_NAME
       );
       const data = await getAcademicosProyectosConteo(projectsCollection);
-      return { success: true, data };
+      return data;
     },
     {
       detail: {
@@ -45,7 +45,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
         PROJECT_COLLECTION_NAME
       );
       const data = await getTematicasProyectosConteo(projectsCollection);
-      return { success: true, data };
+      return data;
     },
     {
       detail: {
@@ -62,7 +62,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
         PROJECT_COLLECTION_NAME
       );
       const data = await getUnidadesProyectosConteo(projectsCollection);
-      return { success: true, data };
+      return data;
     },
     {
       detail: {
@@ -81,7 +81,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
       const data = await getInstitucionesConvocatoriaProyectosConteo(
         projectsCollection
       );
-      return { success: true, data };
+      return data;
     },
     {
       detail: {
@@ -101,7 +101,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
       const data = await getTiposConvocatoriaProyectosConteo(
         projectsCollection
       );
-      return { success: true, data };
+      return data;
     },
     {
       detail: {
@@ -118,7 +118,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
         ACADEMICOS_COLLECTION_NAME
       );
       const data = await getProfesoresPorUnidadAcademica(academicosCollection);
-      return { success: true, data };
+      return data;
     },
     {
       detail: {
@@ -135,7 +135,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
         PROJECT_COLLECTION_NAME
       );
       const data = await getMontoTotalPorInstitucion(projectsCollection);
-      return { success: true, data };
+      return data;
     },
     {
       detail: {
@@ -153,7 +153,7 @@ export const EstadisticasRoutes = new Elysia({ prefix: "/proyectos" })
         PROJECT_COLLECTION_NAME
       );
       const data = await getMontoTotalPorTipoConvocatoria(projectsCollection); // <--- Llama a la nueva función
-      return { success: true, data };
+      return data;
     },
     {
       detail: {

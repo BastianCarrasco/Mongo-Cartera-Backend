@@ -17,7 +17,7 @@ export const tematicasRoutes = new Elysia({ prefix: "/tematicas" }) // Prefijo p
       const tematicasCollection: Collection<tematicas> =
         db.collection<tematicas>(TEMATICAS_COLLECTION_NAME);
       const temas = await tematicasCollection.find({}).toArray();
-      return { success: true, data: temas };
+      return temas;
     },
     {
       detail: {

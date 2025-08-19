@@ -34,7 +34,8 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
         ACADEMICOS_COLLECTION_NAME
       );
       const academicos = await academicosCollection.find({}).toArray();
-      return { success: true, data: academicos };
+      // MODIFICACIÓN: Retorna directamente el arreglo
+      return academicos;
     },
     {
       detail: {
@@ -398,7 +399,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
           results,
         };
       } else if (!anySuccess) {
-        set.status = 200; // Ninguno tuvo éxito, pero tampoco hubo errores de búsqueda/validación
+        set.status = 200; // Ningún tuvo éxito, pero tampoco hubo errores de búsqueda/validación
         return {
           success: true,
           message: "Ningún Link_Foto de académico fue modificado",

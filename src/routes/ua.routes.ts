@@ -25,7 +25,7 @@ export const unidadAcademicaRoutes = new Elysia({
       const uaCollection: Collection<UnidadAcademica> =
         db.collection(UA_COLLECTION_NAME);
       const unidadesAcademicas = await uaCollection.find({}).toArray();
-      return { success: true, data: unidadesAcademicas };
+      return unidadesAcademicas;
     },
     {
       detail: {

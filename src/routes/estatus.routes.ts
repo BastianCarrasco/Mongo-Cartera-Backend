@@ -18,7 +18,7 @@ export const estatusRoutes = new Elysia({ prefix: "/estatus" }) // Prefijo para 
         ESTATUS_COLLECTION_NAME
       );
       const statuses = await estatusCollection.find({}).toArray();
-      return { success: true, data: statuses };
+      return statuses;
     },
     {
       detail: {

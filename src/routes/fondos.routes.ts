@@ -18,7 +18,7 @@ export const fondosRoutes = new Elysia({ prefix: "/fondos" }) // Prefijo para es
         FONDOS_COLLECTION_NAME
       );
       const allFondos = await fondosCollection.find({}).toArray();
-      return { success: true, data: allFondos };
+      return allFondos;
     },
     {
       detail: {

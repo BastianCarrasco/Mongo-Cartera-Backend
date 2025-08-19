@@ -17,7 +17,7 @@ export const tipoConvRoutes = new Elysia({ prefix: "/tipos-convocatoria" })
       const tipoConvCollection: Collection<tipo_convocatoria> =
         db.collection<tipo_convocatoria>(TIPO_CONV_COLLECTION_NAME);
       const tipos = await tipoConvCollection.find({}).toArray();
-      return { success: true, data: tipos };
+      return tipos;
     },
     {
       detail: {

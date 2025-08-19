@@ -25,7 +25,7 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
         PROJECT_COLLECTION_NAME
       );
       const projects = await projectsCollection.find({}).toArray();
-      return { success: true, data: projects };
+      return projects;
     },
     {
       detail: {

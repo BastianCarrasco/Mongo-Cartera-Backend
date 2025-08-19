@@ -24,7 +24,7 @@ export const institucionRoutes = new Elysia({ prefix: "/instituciones" }) // Agr
         INSTITUCIONES_COLLECTION_NAME
       );
       const instituciones = await institucionesCollection.find({}).toArray();
-      return { success: true, data: instituciones };
+      return instituciones;
     },
     {
       detail: {

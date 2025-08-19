@@ -17,7 +17,7 @@ export const tipoApoyoRoutes = new Elysia({ prefix: "/tipos-apoyo" }) // Prefijo
       const tipoApoyoCollection: Collection<tipo_apoyo> =
         db.collection<tipo_apoyo>(TIPO_APOYO_COLLECTION_NAME);
       const allTipos = await tipoApoyoCollection.find({}).toArray();
-      return { success: true, data: allTipos };
+      return allTipos;
     },
     {
       detail: {
