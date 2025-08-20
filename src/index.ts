@@ -1,18 +1,20 @@
 import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
+import { cors } from "@elysiajs/cors"; // <--- Importa el plugin CORS
 import { connectToMongo } from "./bd/mongo";
-import { projectRoutes } from "../src/routes/project.routes"; // Importa las rutas de proyectos
+import { projectRoutes } from "../src/routes/project.routes";
 import { academicoRoutes } from "../src/routes/academicos.routes";
-import { institucionRoutes } from "../src/routes/instituciones.routes"; // Importa las rutas de instituciones
-import { unidadAcademicaRoutes } from "../src/routes/ua.routes"; // Importa las rutas de unidades académicas
+import { institucionRoutes } from "../src/routes/instituciones.routes";
+import { unidadAcademicaRoutes } from "../src/routes/ua.routes";
 import { EstadisticasRoutes } from "./routes/funciones/Estadisticas.routes";
 import { tipoConvRoutes } from "./routes/tipo_conv.routes";
-import { estatusRoutes } from "./routes/estatus.routes"; // Importa las rutas de estatus
+import { estatusRoutes } from "./routes/estatus.routes";
 import { tematicasRoutes } from "./routes/tematicas.routes";
 import { fondosRoutes } from "./routes/fondos.routes";
 import { tipoApoyoRoutes } from "./routes/tipo_apoyo.routes";
 import { perfilProyectoRoutes } from "./routes/preguntas_perfil.routes";
 import { respuestasPerfilRoutes } from "./routes/respuestas_perfil.routes";
+
 const app = new Elysia();
 
 // Conectar a MongoDB al iniciar la aplicación
@@ -20,6 +22,16 @@ app.onStart(async () => {
   await connectToMongo();
   console.log("Server starting and MongoDB connected.");
 });
+
+// AÑADE ESTO: Plugin de CORS
+app.use(
+  cors({
+    origin: true, // <--- CAMBIO AQUÍ: Esto permite cualquier origen ('*')
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 // Plugin de Swagger para la documentación
 app.use(
@@ -61,6 +73,7 @@ app.use(unidadAcademicaRoutes);
 app.use(respuestasPerfilRoutes);
 
 app.use(EstadisticasRoutes);
+
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
