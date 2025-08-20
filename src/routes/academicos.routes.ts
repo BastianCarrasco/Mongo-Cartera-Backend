@@ -15,15 +15,57 @@ type CreateAcademicoBody = Omit<Academico, "_id">;
 type UpdateAcademicoBody = Partial<Omit<Academico, "_id">>;
 
 // Tipo para el cuerpo de la solicitud de actualización de foto por nombre (para un solo académico)
+// Ajustado para permitir link_foto como string o null, consistente con el esquema de Elysia
 type UpdateFotoByNameBody = {
   nombre: string;
   a_paterno: string;
   a_materno: string | null;
-  link_foto: string;
+  link_foto: string | null; // <--- Cambio aquí: permite null
 };
 
 // Nuevo tipo para el cuerpo de la solicitud de actualización de foto por nombre (para múltiples académicos)
 type UpdateFotosBatchBody = UpdateFotoByNameBody[]; // Es un arreglo del tipo UpdateFotoByNameBody
+
+// --- ESQUEMAS DE VALIDACIÓN REUTILIZABLES ---
+const academicoBaseSchema = t.Object({
+  nombre: t.String({ description: "Nombre del académico" }),
+  // Email ahora puede ser email válido, null, o string vacío
+  email: t.Union([t.String({ format: "email" }), t.Null(), t.Literal("")], {
+    description: "Email del académico (puede ser email válido, null, o vacío)",
+  }),
+  // a_materno puede ser string, null, o string vacío
+  a_materno: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description:
+      "Apellido materno del académico (opcional, puede ser nulo o vacío)",
+  }),
+  a_paterno: t.String({ description: "Apellido paterno del académico" }),
+  // unidad puede ser string, null, o string vacío
+  unidad: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Unidad o departamento del académico (puede ser nulo o vacío)",
+  }),
+  // link_foto ahora puede ser URI válida, null, o string vacío
+  link_foto: t.Union([t.String({ format: "uri" }), t.Null(), t.Literal("")], {
+    description:
+      "URL de la foto del académico (puede ser URI válida, null, o vacío)",
+  }),
+});
+
+const updateFotoBodySchema = t.Object({
+  nombre: t.String({ description: "Nombre del académico a buscar" }),
+  a_paterno: t.String({
+    description: "Apellido paterno del académico a buscar",
+  }),
+  // a_materno en updateFotoBodySchema
+  a_materno: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description:
+      "Apellido materno del académico a buscar (opcional, puede ser nulo o vacío)",
+  }),
+  // link_foto en updateFotoBodySchema
+  link_foto: t.Union([t.String({ format: "uri" }), t.Null(), t.Literal("")], {
+    description:
+      "Nuevo URL de la foto del académico (puede ser URI válida, null, o vacío)",
+  }),
+});
 
 export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa las rutas con un prefijo
   .get(
@@ -34,7 +76,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
         ACADEMICOS_COLLECTION_NAME
       );
       const academicos = await academicosCollection.find({}).toArray();
-      // MODIFICACIÓN: Retorna directamente el arreglo
+      // Retorna directamente el arreglo
       return academicos;
     },
     {
@@ -106,24 +148,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
       };
     },
     {
-      body: t.Object({
-        nombre: t.String({ description: "Nombre del académico" }),
-        email: t.String({
-          format: "email",
-          description: "Email del académico",
-        }),
-        a_materno: t.Union([t.String(), t.Null()], {
-          description: "Apellido materno del académico (opcional)",
-        }),
-        a_paterno: t.String({ description: "Apellido paterno del académico" }),
-        unidad: t.String({
-          description: "Unidad o departamento del académico",
-        }),
-        link_foto: t.String({
-          format: "uri",
-          description: "URL de la foto del académico",
-        }),
-      }),
+      body: academicoBaseSchema, // <--- Reutilización del esquema base
       detail: {
         summary: "Crear un nuevo académico",
         tags: ["Académicos"],
@@ -182,16 +207,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
           description: "ID de MongoDB válido para el académico a actualizar",
         }),
       }),
-      body: t.Partial(
-        t.Object({
-          nombre: t.String(),
-          email: t.String({ format: "email" }),
-          a_materno: t.Union([t.String(), t.Null()]),
-          a_paterno: t.String(),
-          unidad: t.String(),
-          link_foto: t.String({ format: "uri" }),
-        })
-      ),
+      body: t.Partial(academicoBaseSchema), // <--- Reutilización del esquema parcial
       detail: {
         summary: "Actualizar un académico existente",
         tags: ["Académicos"],
@@ -288,19 +304,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
       };
     },
     {
-      body: t.Object({
-        nombre: t.String({ description: "Nombre del académico a buscar" }),
-        a_paterno: t.String({
-          description: "Apellido paterno del académico a buscar",
-        }),
-        a_materno: t.Union([t.String(), t.Null()], {
-          description: "Apellido materno del académico a buscar (opcional)",
-        }),
-        link_foto: t.String({
-          format: "uri",
-          description: "Nuevo URL de la foto del académico",
-        }),
-      }),
+      body: updateFotoBodySchema, // <--- Reutilización del esquema
       detail: {
         summary:
           "Actualizar link_foto de un académico por nombre, apellido paterno y materno",
@@ -416,20 +420,7 @@ export const academicoRoutes = new Elysia({ prefix: "/academicos" }) // Agrupa l
     },
     {
       body: t.Array(
-        // ¡Aquí la clave! Espera un arreglo de los objetos de actualización
-        t.Object({
-          nombre: t.String({ description: "Nombre del académico a buscar" }),
-          a_paterno: t.String({
-            description: "Apellido paterno del académico a buscar",
-          }),
-          a_materno: t.Union([t.String(), t.Null()], {
-            description: "Apellido materno del académico a buscar (opcional)",
-          }),
-          link_foto: t.String({
-            format: "uri",
-            description: "Nuevo URL de la foto del académico",
-          }),
-        }),
+        updateFotoBodySchema, // <--- Reutilización del esquema
         {
           description:
             "Arreglo de datos para actualizar la foto de múltiples académicos",

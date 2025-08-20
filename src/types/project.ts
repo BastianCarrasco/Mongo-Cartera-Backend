@@ -1,35 +1,32 @@
 import type { ObjectId } from "mongodb";
 
 export interface Academico {
-  nombre: string;
-  a_paterno: string;
-  a_materno: string;
+  nombre: string | null; // Nombre del académico puede ser string o null
+  a_paterno: string | null; // Apellido paterno del académico puede ser string o null
+  a_materno: string | null; // Apellido materno del académico puede ser string o null
 }
 
 export interface Estudiante {
-  // Define las propiedades de un estudiante si las tiene
-  // Por ahora, asumimos que puede ser vacío o con cualquier tipo si no está estructurado.
-  [key: string]: any; // Permite cualquier propiedad si no hay una estructura definida
+  nombre: string | null; // Nombre del estudiante puede ser string o null
+  a_paterno: string | null; // Apellido paterno del estudiante puede ser string o null
+  a_materno: string | null; // Apellido materno del estudiante puede ser string o null
 }
 
 export interface Project {
   _id?: ObjectId;
-  id_kth?: string | null; // Parece que puede ser string o null, y a veces no está al inicio
-  comentarios?: string;
-  nombre: string;
-  academicos: Academico[];
-  estudiantes: Estudiante[]; // La imagen muestra un array vacío, pero lo dejamos como Estudiante[]
-  monto: number;
-  fecha_postulacion: string; // Si MongoDB lo guarda como ISODate, cámbialo a `Date`
-  unidad: string;
-  tematica: string;
-  estatus: string;
-  convocatoria: string;
-  tipo_convocatoria: string;
-  inst_conv: string;
-  detalle_apoyo: string;
-  apoyo: string;
-  // Si los 'id_kth' y 'comentarios' al final del documento son los mismos
-  // que los del principio, no los dupliques en la interfaz. Si son diferentes
-  // (ej. de seguimiento), dales nombres únicos. Asumo que son los mismos.
+  id_kth: string | null; // Puede ser string o null
+  comentarios: string | null; // Puede ser string o null
+  nombre: string; // <--- OBLIGATORIO: Siempre debe ser un string no nulo ni vacío
+  academicos: Academico[]; // <--- OBLIGATORIO: Debe ser un array, y se espera que no esté vacío.
+  estudiantes: Estudiante[]; // Puede ser un array vacío, los elementos internos pueden ser nulos
+  monto: number | null; // Puede ser número o null
+  fecha_postulacion: string | null; // Puede ser string o null
+  unidad: string | null; // Puede ser string o null
+  tematica: string | null; // Puede ser string o null
+  estatus: string | null; // Puede ser string o null
+  convocatoria: string | null; // Puede ser string o null
+  tipo_convocatoria: string | null; // Puede ser string o null
+  inst_conv: string | null; // Puede ser string o null
+  detalle_apoyo: string | null; // Puede ser string o null
+  apoyo: string | null; // Puede ser string o null
 }

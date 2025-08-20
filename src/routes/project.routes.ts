@@ -1,22 +1,96 @@
 import { Elysia, t } from "elysia";
 import { Collection, ObjectId } from "mongodb";
-import { getDb } from "../bd/mongo";
-import type { Project, Academico, Estudiante } from "../types/project"; // Importa tipos desde 'types'
+import { getDb } from "../bd/mongo"; // Asegúrate de que esta ruta sea correcta
+import type { Project, Academico, Estudiante } from "../types/project"; // Importa tipos actualizados
 
 // Nombre de la colección de proyectos
 const PROJECT_COLLECTION_NAME = "PROYECTOS";
 
-// --- CONTROLADORES (Funciones que manejan la lógica de negocio) ---
+// --- ESQUEMAS DE VALIDACIÓN REUTILIZABLES ---
 
-// Tipo para el cuerpo de la solicitud POST
-type CreateProjectBody = Omit<Project, "_id"> & {
-  estudiantes?: Estudiante[];
-};
+// Esquema para un objeto Academico dentro del array
+const academicoSubSchema = t.Object({
+  nombre: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Nombre del académico (string, null o vacío)",
+  }),
+  a_paterno: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Apellido paterno del académico (string, null o vacío)",
+  }),
+  a_materno: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Apellido materno del académico (string, null o vacío)",
+  }),
+});
 
-// Tipo para el cuerpo de la solicitud PUT (parcial)
-type UpdateProjectBody = Partial<Omit<Project, "_id">>;
+// Esquema para un objeto Estudiante dentro del array
+const estudianteSubSchema = t.Object({
+  nombre: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Nombre del estudiante (string, null o vacío)",
+  }),
+  a_paterno: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Apellido paterno del estudiante (string, null o vacío)",
+  }),
+  a_materno: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Apellido materno del estudiante (string, null o vacío)",
+  }),
+});
 
-export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las rutas con un prefijo
+// Esquema principal para el cuerpo de la solicitud POST
+const createProjectSchema = t.Object({
+  id_kth: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "ID KTH (string, null o vacío)",
+  }),
+  comentarios: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Comentarios (string, null o vacío)",
+  }),
+  nombre: t.String({
+    minLength: 1, // <--- Obligatorio y no vacío
+    description: "Nombre del proyecto (obligatorio, no nulo y no vacío)",
+  }),
+  academicos: t.Array(academicoSubSchema, {
+    minItems: 1, // <--- Debe contener al menos un académico
+    description: "Array de académicos (obligatorio, mínimo un elemento)",
+  }),
+  estudiantes: t.Array(estudianteSubSchema, {
+    description: "Array de estudiantes (puede ser vacío)",
+  }),
+  monto: t.Union([t.Number(), t.Null()], {
+    description: "Monto (número o null)",
+  }),
+  fecha_postulacion: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Fecha de postulación (string, null o vacío)",
+  }),
+  unidad: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Unidad (string, null o vacío)",
+  }),
+  tematica: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Temática (string, null o vacío)",
+  }),
+  estatus: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Estatus (string, null o vacío)",
+  }),
+  convocatoria: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Convocatoria (string, null o vacío)",
+  }),
+  tipo_convocatoria: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Tipo de convocatoria (string, null o vacío)",
+  }),
+  inst_conv: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Institución de convocatoria (string, null o vacío)",
+  }),
+  detalle_apoyo: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Detalle de apoyo (string, null o vacío)",
+  }),
+  apoyo: t.Union([t.String(), t.Null(), t.Literal("")], {
+    description: "Tipo de apoyo (string, null o vacío)",
+  }),
+});
+
+// Esquema para el cuerpo de la solicitud PUT (parcial)
+// Usa t.Partial para hacer todos los campos opcionales, pero con las mismas reglas de tipo.
+const updateProjectSchema = t.Partial(createProjectSchema);
+
+// --- RUTAS DE ELYSIA ---
+export const projectRoutes = new Elysia({ prefix: "/proyectos" })
   .get(
     "/",
     async () => {
@@ -41,8 +115,15 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
       const projectsCollection: Collection<Project> = db.collection(
         PROJECT_COLLECTION_NAME
       );
+
+      // Validar si el ID es un ObjectId válido
+      if (!ObjectId.isValid(params.id)) {
+        set.status = 400;
+        return { success: false, message: "ID de proyecto inválido" };
+      }
+
       const project = await projectsCollection.findOne({
-        _id: new ObjectId(params.id as string),
+        _id: new ObjectId(params.id), // No es necesario 'as string', Elysia ya lo valida
       });
 
       if (!project) {
@@ -55,6 +136,7 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
       params: t.Object({
         id: t.String({
           pattern: "^[0-9a-fA-F]{24}$",
+          description: "ID de MongoDB válido para el proyecto",
         }),
       }),
       detail: {
@@ -71,14 +153,26 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
         PROJECT_COLLECTION_NAME
       );
 
-      const newProjectData: CreateProjectBody = body as CreateProjectBody;
+      const newProjectData: Project = body as Project; // Elysia ya validó el 'body' con 'createProjectSchema'
 
-      // Asegurar que estudiantes sea un array, incluso si viene undefined o null
-      if (!newProjectData.estudiantes) {
-        newProjectData.estudiantes = [];
+      // Validación adicional: Al menos un campo de nombre/apellido debe tener valor para cualquier académico
+      const hasValidAcademicoEntry = newProjectData.academicos.some(
+        (academico) =>
+          (academico.nombre !== null && academico.nombre.trim() !== "") ||
+          (academico.a_paterno !== null && academico.a_paterno.trim() !== "") ||
+          (academico.a_materno !== null && academico.a_materno.trim() !== "")
+      );
+
+      if (!hasValidAcademicoEntry) {
+        set.status = 400;
+        return {
+          success: false,
+          message:
+            "Al menos un académico debe tener un nombre, apellido paterno o apellido materno no vacío/nulo.",
+        };
       }
 
-      const result = await projectsCollection.insertOne(newProjectData as any);
+      const result = await projectsCollection.insertOne(newProjectData);
 
       if (!result.acknowledged) {
         set.status = 500;
@@ -93,29 +187,7 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
       };
     },
     {
-      body: t.Object({
-        id_kth: t.Optional(t.Union([t.String(), t.Null()])),
-        comentarios: t.Optional(t.String()),
-        nombre: t.String(),
-        academicos: t.Array(
-          t.Object({
-            nombre: t.String(),
-            a_paterno: t.String(),
-            a_materno: t.String(),
-          })
-        ),
-        estudiantes: t.Optional(t.Array(t.Any())), // Si la estructura es variable o no la necesitas validar fuertemente
-        monto: t.Number(),
-        fecha_postulacion: t.String(),
-        unidad: t.String(),
-        tematica: t.String(),
-        estatus: t.String(),
-        convocatoria: t.String(),
-        tipo_convocatoria: t.String(),
-        inst_conv: t.String(),
-        detalle_apoyo: t.String(),
-        apoyo: t.String(),
-      }),
+      body: createProjectSchema, // Usamos el esquema para la creación
       detail: {
         summary: "Crear un nuevo proyecto",
         tags: ["Proyectos"],
@@ -130,10 +202,65 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
         PROJECT_COLLECTION_NAME
       );
 
-      const updateData: UpdateProjectBody = body as UpdateProjectBody;
+      // Validar si el ID es un ObjectId válido
+      if (!ObjectId.isValid(params.id)) {
+        set.status = 400;
+        return { success: false, message: "ID de proyecto inválido" };
+      }
+
+      const updateData: Partial<Project> = body as Partial<Project>;
+
+      // Asegurarse de que el cuerpo no esté vacío
+      if (Object.keys(updateData).length === 0) {
+        set.status = 400;
+        return {
+          success: false,
+          message: "El cuerpo de la solicitud no puede estar vacío para PUT",
+        };
+      }
+
+      // Validación específica para 'nombre' si está presente en la actualización
+      if (
+        updateData.nombre !== undefined &&
+        (updateData.nombre === null || updateData.nombre.trim() === "")
+      ) {
+        set.status = 400;
+        return {
+          success: false,
+          message: "El nombre del proyecto no puede ser nulo o vacío.",
+        };
+      }
+
+      // Validación para 'academicos' si está presente en la actualización
+      if (updateData.academicos !== undefined) {
+        if (updateData.academicos.length === 0) {
+          set.status = 400;
+          return {
+            success: false,
+            message: "El array de académicos no puede estar vacío.",
+          };
+        }
+
+        const hasValidAcademicoEntry = updateData.academicos.some(
+          (academico) =>
+            (academico.nombre !== null && academico.nombre.trim() !== "") ||
+            (academico.a_paterno !== null &&
+              academico.a_paterno.trim() !== "") ||
+            (academico.a_materno !== null && academico.a_materno.trim() !== "")
+        );
+
+        if (!hasValidAcademicoEntry) {
+          set.status = 400;
+          return {
+            success: false,
+            message:
+              "Al menos un académico en la actualización debe tener un nombre, apellido paterno o apellido materno no vacío/nulo.",
+          };
+        }
+      }
 
       const result = await projectsCollection.updateOne(
-        { _id: new ObjectId(params.id as string) },
+        { _id: new ObjectId(params.id) },
         { $set: updateData }
       );
 
@@ -143,7 +270,10 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
       }
       if (result.modifiedCount === 0) {
         set.status = 200;
-        return { success: true, message: "Proyecto no modificado" };
+        return {
+          success: true,
+          message: "Proyecto no modificado (datos idénticos)",
+        };
       }
 
       return { success: true, message: "Proyecto actualizado exitosamente" };
@@ -152,33 +282,10 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
       params: t.Object({
         id: t.String({
           pattern: "^[0-9a-fA-F]{24}$",
+          description: "ID de MongoDB válido para el proyecto a actualizar",
         }),
       }),
-      body: t.Partial(
-        t.Object({
-          id_kth: t.Union([t.String(), t.Null()]),
-          comentarios: t.String(),
-          nombre: t.String(),
-          academicos: t.Array(
-            t.Object({
-              nombre: t.String(),
-              a_paterno: t.String(),
-              a_materno: t.String(),
-            })
-          ),
-          estudiantes: t.Array(t.Any()),
-          monto: t.Number(),
-          fecha_postulacion: t.String(),
-          unidad: t.String(),
-          tematica: t.String(),
-          estatus: t.String(),
-          convocatoria: t.String(),
-          tipo_convocatoria: t.String(),
-          inst_conv: t.String(),
-          detalle_apoyo: t.String(),
-          apoyo: t.String(),
-        })
-      ),
+      body: updateProjectSchema, // Usamos el esquema parcial para la actualización
       detail: {
         summary: "Actualizar un proyecto existente",
         tags: ["Proyectos"],
@@ -192,8 +299,15 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
       const projectsCollection: Collection<Project> = db.collection(
         PROJECT_COLLECTION_NAME
       );
+
+      // Validar si el ID es un ObjectId válido
+      if (!ObjectId.isValid(params.id)) {
+        set.status = 400;
+        return { success: false, message: "ID de proyecto inválido" };
+      }
+
       const result = await projectsCollection.deleteOne({
-        _id: new ObjectId(params.id as string),
+        _id: new ObjectId(params.id),
       });
 
       if (result.deletedCount === 0) {
@@ -206,6 +320,7 @@ export const projectRoutes = new Elysia({ prefix: "/proyectos" }) // Agrupa las 
       params: t.Object({
         id: t.String({
           pattern: "^[0-9a-fA-F]{24}$",
+          description: "ID de MongoDB válido para el proyecto a eliminar",
         }),
       }),
       detail: {

@@ -14,6 +14,7 @@ import { fondosRoutes } from "./routes/fondos.routes";
 import { tipoApoyoRoutes } from "./routes/tipo_apoyo.routes";
 import { perfilProyectoRoutes } from "./routes/preguntas_perfil.routes";
 import { respuestasPerfilRoutes } from "./routes/respuestas_perfil.routes";
+import { estudiantesRoutes } from "./routes/estudiantes.routes"; // Asegúrate de importar las rutas de estudiantes
 
 const app = new Elysia();
 
@@ -71,7 +72,7 @@ app.use(tipoApoyoRoutes);
 app.use(tipoConvRoutes);
 app.use(unidadAcademicaRoutes);
 app.use(respuestasPerfilRoutes);
-
+app.use(estudiantesRoutes); // Asegúrate de montar las rutas de estudiantes
 app.use(EstadisticasRoutes);
 
 // Iniciar el servidor
