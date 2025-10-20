@@ -24,7 +24,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Obtiene el número total de proyectos en la colección EXCEL-BUN -MongoDB",
+          "Obtiene el número total de proyectos en la colección EXCEL-BUN",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -122,7 +122,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Obtiene el número total de proyectos y la cantidad de valores distintos por categoría en EXCEL-BUN -MongoDB",
+          "Devuelve el número total de proyectos y la cantidad de valores distintos por categoría en EXCEL-BUN",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -163,7 +163,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Devuelve las temáticas y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+          "Devuelve las temáticas y cuántas veces se repiten en EXCEL-BUN",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -203,8 +203,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     },
     {
       detail: {
-        summary:
-          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+        summary: "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -247,7 +246,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+          "Devuelve las Unidades Académicas y cuántas veces se repiten en EXCEL-BUN",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -294,7 +293,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+          "Devuelve los tipos de convocatoria y cuántas veces se repiten en EXCEL-BUN",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -341,7 +340,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+          "Devuelve las instituciones de convocatoria y cuántas veces se repiten en EXCEL-BUN",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -389,7 +388,199 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+          "Devuelve las fechas de postulación y cuántas veces se repiten en EXCEL-BUN",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
+  )
+  .get(
+    "/proyectos-por-academico",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+
+        const pipeline = [
+          {
+            // Convertimos ambos campos en arrays, limpiando nulos
+            $project: {
+              nombreProyecto: "$Nombre Proyecto/Perfil Proyecto",
+              lideres: {
+                $cond: {
+                  if: {
+                    $or: [
+                      { $eq: ["$Académic@/s-Líder", null] },
+                      { $eq: ["$Académic@/s-Líder", ""] },
+                    ],
+                  },
+                  then: [],
+                  else: [{ $trim: { input: "$Académic@/s-Líder" } }],
+                },
+              },
+              partners: {
+                $cond: {
+                  if: {
+                    $or: [
+                      { $eq: ["$Académic@/s-Partner", null] },
+                      { $eq: ["$Académic@/s-Partner", ""] },
+                    ],
+                  },
+                  then: [],
+                  else: {
+                    // A veces puede venir "Carlos Carlesi, Gianni Olguín"
+                    // separarlos por coma si corresponde
+                    $map: {
+                      input: {
+                        $split: [
+                          { $trim: { input: "$Académic@/s-Partner" } },
+                          ",",
+                        ],
+                      },
+                      as: "p",
+                      in: { $trim: { input: "$$p" } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            // Combinar líderes y partners en un solo array de académicos
+            $addFields: {
+              academicos: { $setUnion: ["$lideres", "$partners"] },
+            },
+          },
+          {
+            // Explota el array (un documento por académico)
+            $unwind: "$academicos",
+          },
+          {
+            // Filtramos vacíos, nulls o cadenas sin sentido
+            $match: {
+              academicos: { $nin: [null, "", " ", "-", "N/A"] },
+            },
+          },
+          {
+            // Agrupamos por el nombre de académico
+            $group: {
+              _id: "$academicos",
+              cantidadProyectos: { $sum: 1 },
+            },
+          },
+          {
+            // Orden descendente por cantidad de proyectos
+            $sort: { cantidadProyectos: -1 },
+          },
+        ];
+
+        const resultados = await collection.aggregate(pipeline).toArray();
+
+        return {
+          message:
+            "Conteo de proyectos por académico (considerando Líder y Partner)",
+          totalAcademicos: resultados.length,
+          datos: resultados.map((r) => ({
+            nombre: r._id,
+            cantidad: r.cantidadProyectos,
+            proyectos: r.proyectos,
+          })),
+        };
+      } catch (error) {
+        console.error("❌ Error al obtener conteo por académico:", error);
+        return {
+          ok: false,
+          error: "Fallo en la agregación de datos (ver consola del servidor).",
+        };
+      }
+    },
+    {
+      detail: {
+        summary:
+          "Retorna cuántos proyectos tiene cada académico (como Líder o Partner)",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
+  )
+  .get(
+    "/proyectos-por-tematica",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+
+        const pipeline = [
+          {
+            // Convertimos Temática en arreglo (si viene separado por comas)
+            $project: {
+              nombreProyecto: "$Nombre Proyecto/Perfil Proyecto",
+              tematicas: {
+                $cond: {
+                  if: {
+                    $or: [
+                      { $eq: ["$Temática", null] },
+                      { $eq: ["$Temática", ""] },
+                    ],
+                  },
+                  then: [],
+                  else: {
+                    $map: {
+                      input: {
+                        $split: [{ $trim: { input: "$Temática" } }, ","],
+                      },
+                      as: "t",
+                      in: { $trim: { input: "$$t" } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            // Expandir el array
+            $unwind: "$tematicas",
+          },
+          {
+            // Filtrar vacíos, nulos, o guiones
+            $match: {
+              tematicas: { $nin: [null, "", " ", "-", "N/A"] },
+            },
+          },
+          {
+            // Agrupar por temática
+            $group: {
+              _id: "$tematicas",
+              cantidadProyectos: { $sum: 1 },
+              proyectos: { $addToSet: "$nombreProyecto" },
+            },
+          },
+          {
+            // Orden descendente
+            $sort: { cantidadProyectos: -1 },
+          },
+        ];
+
+        const resultados = await collection.aggregate(pipeline).toArray();
+
+        return {
+          ok: true,
+          message: "Conteo de proyectos por temática en EXCEL-BUN",
+          totalTematicas: resultados.length,
+          datos: resultados.map((r) => ({
+            nombre: r._id,
+            cantidad: r.cantidadProyectos,
+          })),
+        };
+      } catch (error) {
+        console.error("❌ Error al obtener conteo de temáticas:", error);
+        return {
+          ok: false,
+          error: "Fallo en la agregación de datos (ver consola del servidor).",
+        };
+      }
+    },
+    {
+      detail: {
+        summary: "Retorna cantidad de proyectos por temática",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
