@@ -24,7 +24,7 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Obtiene el número total de proyectos en la colección EXCEL-BUN",
+          "Obtiene el número total de proyectos en la colección EXCEL-BUN -MongoDB",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -115,14 +115,14 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
         console.error("❌ Error en análisis EXCEL-BUN:", error);
         return {
           ok: false,
-          error: "No se pudo realizar el análisis de datos en EXCEL-BUN.",
+          error: "No se pudo realizar el análisis de datos en EXCEL-BUN .",
         };
       }
     },
     {
       detail: {
         summary:
-          "Obtiene el número total de proyectos y la cantidad de valores distintos por categoría en EXCEL-BUN",
+          "Obtiene el número total de proyectos y la cantidad de valores distintos por categoría en EXCEL-BUN -MongoDB",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
@@ -163,7 +163,233 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
     {
       detail: {
         summary:
-          "Devuelve las temáticas y cuántas veces se repiten en EXCEL-BUN",
+          "Devuelve las temáticas y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
+  )
+
+  .get(
+    "/estatus",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+        const docs = await collection.find({}).toArray();
+
+        const conteoEstatus: Record<string, number> = {};
+
+        for (const doc of docs) {
+          const estatus = String(doc["Estatus"] || "Sin estatus").trim();
+          if (estatus && estatus.toLowerCase() !== "n/a") {
+            conteoEstatus[estatus] = (conteoEstatus[estatus] || 0) + 1;
+          }
+        }
+
+        const resultado = Object.entries(conteoEstatus)
+          .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+          .sort((a, b) => b.cantidad - a.cantidad); // opcional: ordenar desc
+
+        return {
+          ok: true,
+          message: "Estatus y su cantidad de ocurrencias en EXCEL-BUN",
+          totalEstatus: resultado.length,
+          datos: resultado,
+        };
+      } catch (error) {
+        console.error("❌ Error al contar estatus:", error);
+        return { ok: false, error: "No se pudo calcular los estatus." };
+      }
+    },
+    {
+      detail: {
+        summary:
+          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
+  )
+  .get(
+    "/ua",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+        const docs = await collection.find({}).toArray();
+
+        const conteoUnidadAcademica: Record<string, number> = {};
+
+        for (const doc of docs) {
+          const estatus = String(
+            doc["Unidad Académica"] || "Sin unidad académica"
+          ).trim();
+          if (estatus && estatus.toLowerCase() !== "n/a") {
+            conteoUnidadAcademica[estatus] =
+              (conteoUnidadAcademica[estatus] || 0) + 1;
+          }
+        }
+
+        const resultado = Object.entries(conteoUnidadAcademica)
+          .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+          .sort((a, b) => b.cantidad - a.cantidad); // opcional: ordenar desc
+
+        return {
+          ok: true,
+          message: "Unidad Académica y su cantidad de ocurrencias en EXCEL-BUN",
+          totalUnidadAcademica: resultado.length,
+          datos: resultado,
+        };
+      } catch (error) {
+        console.error("❌ Error al contar unidad académica:", error);
+        return { ok: false, error: "No se pudo calcular la unidad académica." };
+      }
+    },
+    {
+      detail: {
+        summary:
+          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
+  )
+  .get(
+    "/tipo_convocatoria",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+        const docs = await collection.find({}).toArray();
+
+        const conteoTipoConvocatoria: Record<string, number> = {};
+
+        for (const doc of docs) {
+          const estatus = String(
+            doc["Tipo Convocatoria"] || "Sin tipo de convocatoria"
+          ).trim();
+          if (estatus && estatus.toLowerCase() !== "n/a") {
+            conteoTipoConvocatoria[estatus] =
+              (conteoTipoConvocatoria[estatus] || 0) + 1;
+          }
+        }
+
+        const resultado = Object.entries(conteoTipoConvocatoria)
+          .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+          .sort((a, b) => b.cantidad - a.cantidad); // opcional: ordenar desc
+
+        return {
+          ok: true,
+          message:
+            "Tipo de Convocatoria y su cantidad de ocurrencias en EXCEL-BUN",
+          totalTipoConvocatoria: resultado.length,
+          datos: resultado,
+        };
+      } catch (error) {
+        console.error("❌ Error al contar tipo de convocatoria:", error);
+        return {
+          ok: false,
+          error: "No se pudo calcular el tipo de convocatoria.",
+        };
+      }
+    },
+    {
+      detail: {
+        summary:
+          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
+  )
+  .get(
+    "/institucion_convocatoria",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+        const docs = await collection.find({}).toArray();
+
+        const conteoInstitucionConvocatoria: Record<string, number> = {};
+
+        for (const doc of docs) {
+          const estatus = String(
+            doc["Institucion Convocatoria"] || "Sin institucion de convocatoria"
+          ).trim();
+          if (estatus && estatus.toLowerCase() !== "n/a") {
+            conteoInstitucionConvocatoria[estatus] =
+              (conteoInstitucionConvocatoria[estatus] || 0) + 1;
+          }
+        }
+
+        const resultado = Object.entries(conteoInstitucionConvocatoria)
+          .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+          .sort((a, b) => b.cantidad - a.cantidad); // opcional: ordenar desc
+
+        return {
+          ok: true,
+          message:
+            "Institucion de Convocatoria y su cantidad de ocurrencias en EXCEL-BUN",
+          totalInstitucionConvocatoria: resultado.length,
+          datos: resultado,
+        };
+      } catch (error) {
+        console.error("❌ Error al contar institucion de convocatoria:", error);
+        return {
+          ok: false,
+          error: "No se pudo calcular la institucion de convocatoria.",
+        };
+      }
+    },
+    {
+      detail: {
+        summary:
+          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
+  )
+
+  .get(
+    "/fechas_postulacion",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+        const docs = await collection.find({}).toArray();
+
+        const conteoFechasPostulacion: Record<string, number> = {};
+
+        for (const doc of docs) {
+          const estatus = String(
+            doc["Fecha Postulación"] || "Sin fecha de postulación"
+          ).trim();
+          if (estatus && estatus.toLowerCase() !== "n/a") {
+            conteoFechasPostulacion[estatus] =
+              (conteoFechasPostulacion[estatus] || 0) + 1;
+          }
+        }
+
+        const resultado = Object.entries(conteoFechasPostulacion)
+          .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+          .sort((a, b) => b.cantidad - a.cantidad); // opcional: ordenar desc
+
+        return {
+          ok: true,
+          message:
+            "Fechas de Postulación y su cantidad de ocurrencias en EXCEL-BUN",
+          totalFechasPostulacion: resultado.length,
+          datos: resultado,
+        };
+      } catch (error) {
+        console.error("❌ Error al contar fechas de postulación:", error);
+        return {
+          ok: false,
+          error: "No se pudo calcular las fechas de postulación.",
+        };
+      }
+    },
+    {
+      detail: {
+        summary:
+          "Devuelve los estatus y cuántas veces se repiten en EXCEL-BUN -MongoDB",
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
