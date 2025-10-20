@@ -584,4 +584,79 @@ export const funcionesExcelBunRoutes = new Elysia({ prefix: "/excel-bun" })
         tags: ["ANALISIS DE LOS DATOS"],
       },
     }
+  )
+  .get(
+    "/unidades-combinadas",
+    async () => {
+      try {
+        const db = await getDb();
+        const collection = db.collection("EXCEL-BUN");
+        const docs = await collection.find({}).toArray();
+
+        const conteoUnidades = {};
+
+        for (const doc of docs) {
+          // --- 🧩 1️⃣ Normalizar el campo "Unidad Académica"
+          let unidadesBase = [];
+          const unidadBase = doc["Unidad Académica"];
+
+          if (typeof unidadBase === "string" && unidadBase.trim()) {
+            unidadesBase = unidadBase
+              .split(",")
+              .map((u) => u.trim())
+              .filter((u) => u && u.toLowerCase() !== "n/a");
+          }
+
+          // --- 🧩 2️⃣ Normalizar el campo "Unidad Académica ++"
+          let unidadesExtra = [];
+          const unidadExtra = doc["Unidad Académica ++"];
+
+          if (Array.isArray(unidadExtra)) {
+            unidadesExtra = unidadExtra
+              .map((u) => String(u).trim())
+              .filter((u) => u && u.toLowerCase() !== "n/a");
+          } else if (typeof unidadExtra === "string" && unidadExtra.trim()) {
+            unidadesExtra = unidadExtra
+              .split(",")
+              .map((u) => u.trim())
+              .filter((u) => u && u.toLowerCase() !== "n/a");
+          }
+
+          // --- 🧩 3️⃣ Unir ambos arreglos y contar ocurrencias
+          const todasUnidades = [
+            ...new Set([...unidadesBase, ...unidadesExtra]),
+          ];
+
+          for (const unidad of todasUnidades) {
+            conteoUnidades[unidad] = (conteoUnidades[unidad] || 0) + 1;
+          }
+        }
+
+        // --- 🧮 4️⃣ Convertir a arreglo y ordenar descendente
+        const resultado = Object.entries(conteoUnidades)
+          .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+          .sort((a, b) => b.cantidad - a.cantidad);
+
+        return {
+          ok: true,
+          message:
+            "Conteo de ocurrencias combinadas por Unidad Académica en EXCEL-BUN",
+          totalUnidades: resultado.length,
+          datos: resultado,
+        };
+      } catch (error) {
+        console.error("❌ Error al contar unidades combinadas:", error);
+        return {
+          ok: false,
+          error: "No se pudo calcular las unidades combinadas.",
+        };
+      }
+    },
+    {
+      detail: {
+        summary:
+          "Devuelve cuántas veces se repite cada Unidad Académica (combinando 'Unidad Académica' y 'Unidad Académica ++')",
+        tags: ["ANALISIS DE LOS DATOS"],
+      },
+    }
   );
