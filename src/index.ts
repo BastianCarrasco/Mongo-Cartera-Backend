@@ -1,20 +1,11 @@
 import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
-import { cors } from "@elysiajs/cors"; // <--- Importa el plugin CORS
+import { cors } from "@elysiajs/cors";
 import { connectToMongo } from "./bd/mongo";
-import { projectRoutes } from "../src/routes/project.routes";
-import { academicoRoutes } from "../src/routes/academicos.routes";
-import { institucionRoutes } from "../src/routes/instituciones.routes";
-import { unidadAcademicaRoutes } from "../src/routes/ua.routes";
-import { EstadisticasRoutes } from "./routes/funciones/Estadisticas.routes";
-import { tipoConvRoutes } from "./routes/tipo_conv.routes";
-import { estatusRoutes } from "./routes/estatus.routes";
-import { tematicasRoutes } from "./routes/tematicas.routes";
-import { fondosRoutes } from "./routes/fondos.routes";
-import { tipoApoyoRoutes } from "./routes/tipo_apoyo.routes";
+
 import { perfilProyectoRoutes } from "./routes/preguntas_perfil.routes";
 import { respuestasPerfilRoutes } from "./routes/respuestas_perfil.routes";
-import { estudiantesRoutes } from "./routes/estudiantes.routes"; // Asegúrate de importar las rutas de estudiantes
+import { excelBunRoutes } from "./routes/excel_bun.routes"; // <- NUEVO
 
 const app = new Elysia();
 
@@ -24,20 +15,20 @@ app.onStart(async () => {
   console.log("Server starting and MongoDB connected.");
 });
 
-// AÑADE ESTO: Plugin de CORS
+// CORS
 app.use(
   cors({
-    origin: true, // <--- CAMBIO AQUÍ: Esto permite cualquier origen ('*')
+    origin: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-// Plugin de Swagger para la documentación
+// Swagger
 app.use(
   swagger({
-    path: "/swagger", // La ruta donde estará la UI de Swagger
+    path: "/swagger",
     documentation: {
       info: {
         title: "API de Gestión de Proyectos de Cartera",
@@ -60,22 +51,12 @@ app.get("/", () => "¡Hola desde tu API de Cartera!", {
   },
 });
 
-// Montar las rutas de proyectos
-app.use(academicoRoutes);
-app.use(estatusRoutes);
-app.use(fondosRoutes);
-app.use(institucionRoutes);
+// 🔗 Montar las rutas
 app.use(perfilProyectoRoutes);
-app.use(projectRoutes);
-app.use(tematicasRoutes);
-app.use(tipoApoyoRoutes);
-app.use(tipoConvRoutes);
-app.use(unidadAcademicaRoutes);
 app.use(respuestasPerfilRoutes);
-app.use(estudiantesRoutes); // Asegúrate de montar las rutas de estudiantes
-app.use(EstadisticasRoutes);
+app.use(excelBunRoutes); // <- NUEVO
 
-// Iniciar el servidor
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(
