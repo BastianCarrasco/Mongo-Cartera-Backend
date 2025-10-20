@@ -1,57 +1,60 @@
 import { Elysia } from "elysia";
-import { ObjectId } from "mongodb";
+import type { Document } from "mongodb";
 import { getDb } from "../bd/mongo";
 
 export const excelBunRoutes = new Elysia({ prefix: "/excel-bun" })
 
-  // POST: insertar un documento en EXCEL-BUN
+  // 🔸 POST: Inserta cualquier JSON
   .post(
     "/",
     async ({ body }) => {
       try {
         const db = await getDb();
         const collection = db.collection("EXCEL-BUN");
-        const result = await collection.insertOne(body);
+
+        // Permitir cualquier JSON
+        const result = await collection.insertOne(body as Document);
+
         return {
+          ok: true,
           message: "Documento insertado correctamente",
           insertedId: result.insertedId,
         };
       } catch (error) {
         console.error("❌ Error al insertar en EXCEL-BUN:", error);
-        return { error: "No se pudo insertar el documento" };
+        return { ok: false, error: "No se pudo insertar el documento" };
       }
     },
     {
       detail: {
-        summary: "Inserta un nuevo documento en la colección EXCEL-BUN",
+        summary: "Inserta cualquier JSON en la colección EXCEL-BUN",
         tags: ["Proyectos"],
       },
     }
   )
 
-  // DELETE: eliminar un documento por su _id
+  // 🔻 DELETE TOTAL: Elimina todos los documentos
   .delete(
-    "/:id",
-    async ({ params }) => {
+    "/",
+    async () => {
       try {
         const db = await getDb();
         const collection = db.collection("EXCEL-BUN");
-        const result = await collection.deleteOne({
-          _id: new ObjectId(params.id),
-        });
 
-        if (result.deletedCount === 0)
-          return { message: "No se encontró el documento para eliminar." };
+        const result = await collection.deleteMany({}); // 🔥 Borrar todo
 
-        return { message: "Documento eliminado correctamente." };
+        return {
+          ok: true,
+          message: `Se eliminaron ${result.deletedCount} documentos de EXCEL-BUN.`,
+        };
       } catch (error) {
-        console.error("❌ Error al eliminar en EXCEL-BUN:", error);
-        return { error: "No se pudo eliminar el documento" };
+        console.error("❌ Error al eliminar documentos de EXCEL-BUN:", error);
+        return { ok: false, error: "No se pudo eliminar la colección" };
       }
     },
     {
       detail: {
-        summary: "Elimina un documento de la colección EXCEL-BUN por ID",
+        summary: "Elimina todos los documentos de EXCEL-BUN",
         tags: ["Proyectos"],
       },
     }
