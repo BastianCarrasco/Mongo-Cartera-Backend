@@ -2,10 +2,12 @@ import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
 import { connectToMongo } from "./bd/mongo";
-import { funcionesExcelBunRoutes } from "./routes/funciones_excel_bun.routes";
+
 import { perfilProyectoRoutes } from "./routes/preguntas_perfil.routes";
 import { respuestasPerfilRoutes } from "./routes/respuestas_perfil.routes";
-import { excelBunRoutes } from "./routes/excel_bun.routes"; // <- NUEVO
+import { excelBunRoutes } from "./routes/excel_bun.routes";
+import { analisisBunRoutes } from "./routes/analisisBun.Routes";
+import { estadisticasBunRoutes } from "./routes/estadisticasBun.Routes";
 
 const app = new Elysia();
 
@@ -55,8 +57,8 @@ app.get("/", () => "¡Hola desde tu API de Cartera!", {
 app.use(perfilProyectoRoutes);
 app.use(respuestasPerfilRoutes);
 app.use(excelBunRoutes); // <- NUEVO
-app.use(funcionesExcelBunRoutes); // <- NUEVO
-
+app.use(analisisBunRoutes); // <- NUEVO
+app.use(estadisticasBunRoutes); // <- NUEVO
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
