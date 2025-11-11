@@ -6,8 +6,8 @@ import { connectToMongo } from "./bd/mongo";
 import { perfilProyectoRoutes } from "./routes/preguntas_perfil.routes";
 import { respuestasPerfilRoutes } from "./routes/respuestas_perfil.routes";
 import { excelBunRoutes } from "./routes/excel_bun.routes";
-import { analisisBunRoutes } from "./routes/analisisBun.Routes";
-import { estadisticasBunRoutes } from "./routes/estadisticasBun.Routes";
+import { analisisBunRoutes } from "./routes/analisis.routes";
+import { estadisticasBunRoutes } from "./routes/estadisticas.routes";
 
 const app = new Elysia();
 
