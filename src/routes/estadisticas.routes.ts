@@ -89,29 +89,55 @@ export const estadisticasBunRoutes = new Elysia({
         const docs = await collection.find({}).toArray();
 
         for (const doc of docs) {
-          const lideresRaw = String(doc["Académic@/s-Líder"] || "").trim();
-          if (lideresRaw && lideresRaw.toLowerCase() !== "n/a") {
-            lideresRaw
-              .split(",")
-              .map((nombre) => nombre.trim())
-              .filter((nombre) => nombre)
-              .forEach((profesor) => {
-                conteoProyectosPorProfesor[profesor] =
-                  (conteoProyectosPorProfesor[profesor] || 0) + 1;
-              });
+          // --- Manejo de Académic@/s-Líder ---
+          let lideres: string[] = [];
+          const lideresData = doc["Académic@/s-Líder"];
+
+          if (Array.isArray(lideresData)) {
+            // Si ya es un array, úsalo directamente
+            lideres = lideresData
+              .map((nombre: any) => String(nombre || "").trim())
+              .filter((nombre) => nombre && nombre.toLowerCase() !== "n/a");
+          } else if (typeof lideresData === "string") {
+            // Si es una cadena, divídela por comas
+            const lideresRaw = lideresData.trim();
+            if (lideresRaw && lideresRaw.toLowerCase() !== "n/a") {
+              lideres = lideresRaw
+                .split(",")
+                .map((nombre) => nombre.trim())
+                .filter((nombre) => nombre);
+            }
           }
 
-          const partnersRaw = String(doc["Académic@/s-Partner"] || "").trim();
-          if (partnersRaw && partnersRaw.toLowerCase() !== "n/a") {
-            partnersRaw
-              .split(",")
-              .map((nombre) => nombre.trim())
-              .filter((nombre) => nombre)
-              .forEach((profesor) => {
-                conteoProyectosPorProfesor[profesor] =
-                  (conteoProyectosPorProfesor[profesor] || 0) + 1;
-              });
+          lideres.forEach((profesor) => {
+            conteoProyectosPorProfesor[profesor] =
+              (conteoProyectosPorProfesor[profesor] || 0) + 1;
+          });
+
+          // --- Manejo de Académic@/s-Partner ---
+          let partners: string[] = [];
+          const partnersData = doc["Académic@/s-Partner"];
+
+          if (Array.isArray(partnersData)) {
+            // Si ya es un array, úsalo directamente
+            partners = partnersData
+              .map((nombre: any) => String(nombre || "").trim())
+              .filter((nombre) => nombre && nombre.toLowerCase() !== "n/a");
+          } else if (typeof partnersData === "string") {
+            // Si es una cadena, divídela por comas
+            const partnersRaw = partnersData.trim();
+            if (partnersRaw && partnersRaw.toLowerCase() !== "n/a") {
+              partners = partnersRaw
+                .split(",")
+                .map((nombre) => nombre.trim())
+                .filter((nombre) => nombre);
+            }
           }
+
+          partners.forEach((profesor) => {
+            conteoProyectosPorProfesor[profesor] =
+              (conteoProyectosPorProfesor[profesor] || 0) + 1;
+          });
         }
 
         const proyectosPorProfesorResultado = Object.entries(
