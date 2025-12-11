@@ -8,6 +8,7 @@ import { respuestasPerfilRoutes } from "./routes/respuestas_perfil.routes";
 import { excelBunRoutes } from "./routes/excel_bun.routes";
 import { analisisBunRoutes } from "./routes/analisis.routes";
 import { estadisticasBunRoutes } from "./routes/estadisticas.routes";
+import { fondos_excel_bunRoutes } from "./routes/fondos_excel_bun.routes";
 
 const app = new Elysia();
 
@@ -59,6 +60,7 @@ app.use(respuestasPerfilRoutes);
 app.use(excelBunRoutes); // <- NUEVO
 app.use(analisisBunRoutes); // <- NUEVO
 app.use(estadisticasBunRoutes); // <- NUEVO
+app.use(fondos_excel_bunRoutes); // <- NUEVO
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
